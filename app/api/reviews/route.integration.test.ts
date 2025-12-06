@@ -237,13 +237,12 @@ describeIntegration('Reviews API Integration Test', () => {
   it('should deny review from non-participant', async () => {
     // Create random user
     const randomEmail = `random-${Date.now()}${TEST_EMAIL_DOMAIN}`;
-    const { data: randomAuth, error: createRandomError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email: randomEmail,
-        password: 'TestPassword123!',
-        email_confirm: true,
-      });
-    if (createRandomError) throw createRandomError;
+    const { data: randomAuth, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: randomEmail,
+      password: 'TestPassword123!',
+      email_confirm: true,
+    });
+    if (createError) throw createError;
     const randomId = randomAuth.user.id;
 
     // Login
