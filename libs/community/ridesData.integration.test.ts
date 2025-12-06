@@ -25,6 +25,7 @@ import type { RidePostType } from '@/app/community/types';
 // Test configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const TEST_EMAIL_DOMAIN = '@example.com';
 
 // Skip this test if not in integration test mode
@@ -76,7 +77,12 @@ describeIntegration('Rides Display Integration Test', () => {
   };
 
   beforeAll(async () => {
-    supabaseAdmin = createSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseAdmin = createSupabaseClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
     const timestamp = Date.now();
     user1Email = `user1-${timestamp}${TEST_EMAIL_DOMAIN}`;
     user2Email = `user2-${timestamp}${TEST_EMAIL_DOMAIN}`;
@@ -90,18 +96,22 @@ describeIntegration('Rides Display Integration Test', () => {
 
   it('should setup test users and rides', async () => {
     // Create User 1
-    const { data: user1Auth } = await supabaseAdmin.auth.signUp({
+    const { data: user1Auth, error: createError1 } = await supabaseAdmin.auth.admin.createUser({
       email: user1Email,
       password: 'TestPassword123!',
+      email_confirm: true,
     });
-    user1Id = user1Auth.user!.id;
+    if (createError1) throw createError1;
+    user1Id = user1Auth.user.id;
 
     // Create User 2
-    const { data: user2Auth } = await supabaseAdmin.auth.signUp({
+    const { data: user2Auth, error: createError2 } = await supabaseAdmin.auth.admin.createUser({
       email: user2Email,
       password: 'TestPassword123!',
+      email_confirm: true,
     });
-    user2Id = user2Auth.user!.id;
+    if (createError2) throw createError2;
+    user2Id = user2Auth.user.id;
 
     // Update profiles with required fields
     await supabaseAdmin

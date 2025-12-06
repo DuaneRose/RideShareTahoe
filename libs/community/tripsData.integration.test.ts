@@ -19,10 +19,16 @@ jest.setTimeout(30000);
 // Test configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const TEST_EMAIL_DOMAIN = '@example.com';
 
 // Setup admin client for user creation only
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
 
 describe('Trip Bookings Integration', () => {
   let driverId: string;
@@ -39,20 +45,24 @@ describe('Trip Bookings Integration', () => {
 
   beforeAll(async () => {
     // 1. Create Driver User
-    const { data: driverAuth, error: driverCreateError } = await supabaseAdmin.auth.signUp({
-      email: driverEmail,
-      password: password,
-    });
+    const { data: driverAuth, error: driverCreateError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email: driverEmail,
+        password: password,
+        email_confirm: true,
+      });
     if (driverCreateError) throw driverCreateError;
-    driverId = driverAuth.user!.id;
+    driverId = driverAuth.user.id;
 
     // 2. Create Passenger User
-    const { data: passengerAuth, error: passengerCreateError } = await supabaseAdmin.auth.signUp({
-      email: passengerEmail,
-      password: password,
-    });
+    const { data: passengerAuth, error: passengerCreateError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email: passengerEmail,
+        password: password,
+        email_confirm: true,
+      });
     if (passengerCreateError) throw passengerCreateError;
-    passengerId = passengerAuth.user!.id;
+    passengerId = passengerAuth.user.id;
 
     // 3. Update Profiles
     await supabaseAdmin
