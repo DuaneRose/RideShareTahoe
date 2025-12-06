@@ -19,7 +19,8 @@ import { createClient } from '@supabase/supabase-js';
 // Test configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const TEST_EMAIL_DOMAIN = '@ridetahoe-test.local';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const TEST_EMAIL_DOMAIN = '@example.com';
 
 // Skip this test if not in integration test mode
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === 'true';
@@ -38,7 +39,12 @@ describeIntegration('Messages API Integration Test', () => {
   beforeAll(async () => {
     // Initialize Supabase admin client
     // Note: In production, use service role key for admin operations
-    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
     // Generate unique test user emails
     const timestamp = Date.now();
@@ -61,9 +67,10 @@ describeIntegration('Messages API Integration Test', () => {
   describe('Setup: Create Test Users', () => {
     it('should create User A with profile', async () => {
       // Create User A
-      const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: userAEmail,
         password: 'TestPassword123!',
+        email_confirm: true,
       });
 
       expect(authError).toBeNull();
@@ -110,9 +117,10 @@ describeIntegration('Messages API Integration Test', () => {
 
     it('should create User B with profile', async () => {
       // Create User B
-      const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: userBEmail,
         password: 'TestPassword123!',
+        email_confirm: true,
       });
 
       expect(authError).toBeNull();

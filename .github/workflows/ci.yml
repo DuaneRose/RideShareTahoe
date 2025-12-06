@@ -47,6 +47,7 @@ jobs:
       - run: npm run typecheck
 
   integration-test:
+    environment: integration
     timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [test]
@@ -58,13 +59,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
 
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      - name: Start Supabase Local Stack
-        run: supabase start
-
+      # Connecting to Remote DB via Secrets
       - name: Run Integration Tests
         run: npm run test:integration
         env:
