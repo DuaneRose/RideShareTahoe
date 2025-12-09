@@ -24,7 +24,10 @@ import type { RidePostType } from '@/app/community/types';
 
 // Test configuration
 const SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined'
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' &&
+  process.env.NEXT_PUBLIC_SUPABASE_URL !== 'null' &&
+  process.env.NEXT_PUBLIC_SUPABASE_URL.trim() !== ''
     ? process.env.NEXT_PUBLIC_SUPABASE_URL
     : 'http://127.0.0.1:54321';
 const SUPABASE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
