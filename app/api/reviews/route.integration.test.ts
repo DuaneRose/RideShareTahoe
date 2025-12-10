@@ -18,7 +18,6 @@ import { POST, GET } from './route';
 import { GET as GET_PENDING } from './pending/route';
 import { NextRequest } from 'next/server';
 import { createClient } from '@/libs/supabase/server';
-import * as supabaseAuth from '@/libs/supabase/auth';
 
 // Mock the server client
 jest.mock('@/libs/supabase/server', () => ({
@@ -296,7 +295,6 @@ describeIntegration('Reviews API Integration Test', () => {
       password: 'TestPassword123!',
     });
     const accessToken = sessionData.session!.access_token;
-    const user = sessionData.session!.user;
 
     // Mock createClient
     (createClient as jest.Mock).mockResolvedValue(
@@ -304,10 +302,6 @@ describeIntegration('Reviews API Integration Test', () => {
         global: { headers: { Authorization: `Bearer ${accessToken}` } },
       })
     );
-
-    const authSpy = jest
-      .spyOn(supabaseAuth, 'getAuthenticatedUser')
-      .mockImplementation(async () => ({ user, authError: null, supabase: supabaseAdmin }));
 
     const req = new NextRequest(`${BASE_URL}/api/reviews`, {
       method: 'POST',
@@ -322,12 +316,8 @@ describeIntegration('Reviews API Integration Test', () => {
       }),
     });
 
-    try {
-      const response = await POST(req);
-      expect(response.status).toBe(403);
-    } finally {
-      authSpy.mockRestore();
-    }
+    const response = await POST(req);
+    expect(response.status).toBe(403);
 
     // Cleanup
     await supabaseAdmin.auth.admin.deleteUser(randomId);

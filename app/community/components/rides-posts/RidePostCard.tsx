@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -8,6 +7,7 @@ import type { RidePostType, ProfileType } from '@/app/community/types';
 import TripBookingModal from '@/components/trips/TripBookingModal';
 import { RidePostActions } from './RidePostActions';
 import { useHasActiveBooking } from '@/hooks/useHasActiveBooking';
+import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
 import { useUserProfile } from '@/hooks/useProfile';
 
 interface RidePostCardProps {
@@ -89,17 +89,14 @@ export function RidePostCard({
   const isOwner = currentUserId === post.poster_id;
   const { hasBooking } = useHasActiveBooking(currentUserId, post.owner?.id);
   const { data: profile } = useUserProfile();
-  const router = useRouter();
+  const { showProfileCompletionPrompt, profileCompletionModal } = useProfileCompletionPrompt({
+    toastMessage: 'Please finish your profile before contacting other riders.',
+    closeRedirect: null,
+  });
 
   const handleRestrictedAction = (action: () => void) => {
     if (!profile?.first_name) {
-      if (
-        confirm(
-          'You need to complete your profile before you can send requests. Would you like to do that now?'
-        )
-      ) {
-        router.push('/complete-profile');
-      }
+      showProfileCompletionPrompt();
       return;
     }
     action();
@@ -261,6 +258,7 @@ export function RidePostCard({
         onClose={() => setIsBookingOpen(false)}
         ride={post}
       />
+      {profileCompletionModal}
     </>
   );
 }
