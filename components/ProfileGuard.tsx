@@ -1,12 +1,13 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useUser } from '@/components/providers/SupabaseUserProvider';
 import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
 import { useUserProfile } from '@/hooks/useProfile';
 
 const PUBLIC_PATHS = new Set(['/login', '/signup', '/auth/callback', '/']);
+const PUBLIC_PATH_PREFIXES = ['/community'];
 const PROFILE_SETUP_PATHS = new Set(['/complete-profile', '/profile/edit']);
 
 export default function ProfileGuard({ children }: { readonly children: React.ReactNode }) {
@@ -19,6 +20,16 @@ export default function ProfileGuard({ children }: { readonly children: React.Re
     showProfileCompletionPrompt,
     hideProfileCompletionPrompt,
   } = useProfileCompletionPrompt({ closeRedirect: '/' });
+
+  const showPromptRef = useRef(showProfileCompletionPrompt);
+  useEffect(() => {
+    showPromptRef.current = showProfileCompletionPrompt;
+  }, [showProfileCompletionPrompt]);
+
+  const hidePromptRef = useRef(hideProfileCompletionPrompt);
+  useEffect(() => {
+    hidePromptRef.current = hideProfileCompletionPrompt;
+  }, [hideProfileCompletionPrompt]);
 
   useEffect(() => {
     // Wait for all loading to finish
@@ -33,29 +44,24 @@ export default function ProfileGuard({ children }: { readonly children: React.Re
 
     // Check if current path is public or part of the setup flow
     const isPublicPath = PUBLIC_PATHS.has(pathname);
+    const hasPublicPrefix = PUBLIC_PATH_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
     const isSetupPath = PROFILE_SETUP_PATHS.has(pathname);
-    const isProtectedPath = !isPublicPath && !isSetupPath;
+    const isProtectedPath = !isPublicPath && !hasPublicPrefix && !isSetupPath;
 
     if (!isProtectedPath) {
-      hideProfileCompletionPrompt();
+      hidePromptRef.current?.();
       return;
     }
 
     if (profile?.first_name) {
-      hideProfileCompletionPrompt();
+      hidePromptRef.current?.();
       return;
     }
 
-    showProfileCompletionPrompt();
-  }, [
-    user,
-    profile,
-    authLoading,
-    profileLoading,
-    pathname,
-    hideProfileCompletionPrompt,
-    showProfileCompletionPrompt,
-  ]);
+    showPromptRef.current?.();
+  }, [user, profile, authLoading, profileLoading, pathname]);
 
   // We render children while checking to avoid flash of white content
   // The useEffect will handle the redirect if needed
