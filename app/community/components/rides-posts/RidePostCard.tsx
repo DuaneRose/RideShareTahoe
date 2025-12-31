@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import type { RidePostType, ProfileType } from '@/app/community/types';
 import TripBookingModal from '@/components/trips/TripBookingModal';
+import DriverPostDetailModal from '@/app/community/components/DriverPostDetailModal';
 import { RidePostActions } from './RidePostActions';
 import { useHasActiveBooking } from '@/hooks/useHasActiveBooking';
 import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
@@ -114,15 +115,7 @@ export function RidePostCard({
   const returnDateLabel = formatDateLabel(post.return_date);
   const returnTimeLabel = formatTimeLabel(post.return_time);
   const hasReturnInfo = isCombinedRoundTrip && !!returnTimeLabel;
-  const vehicleDetails: string | null = post.car_type || null;
-  const vehicleLabel = vehicleDetails ? `Vehicle: ${vehicleDetails}` : null;
-  const metaTags = [
-    vehicleLabel,
-    post.driving_arrangement ? `Pickup: ${post.driving_arrangement}` : null,
-    post.music_preference ? `Music: ${post.music_preference}` : null,
-    post.conversation_preference ? `Conversation: ${post.conversation_preference}` : null,
-    post.special_instructions ? `Notes: ${post.special_instructions}` : null,
-  ].filter(Boolean);
+  const [showDetail, setShowDetail] = useState(false);
 
   const seatsAvailable = post.available_seats ?? post.total_seats ?? 0;
   const showBookingButton =
@@ -201,16 +194,15 @@ export function RidePostCard({
           </div>
         </div>
 
-        {/* Additional metadata */}
-        {metaTags.length > 0 && (
-          <div className="mb-4 space-y-1 text-xs text-gray-500 dark:text-gray-400">
-            {metaTags.map((meta) => (
-              <p key={meta} className="line-clamp-2">
-                {meta}
-              </p>
-            ))}
-          </div>
-        )}
+        {/*Details button*/}
+        <div>
+          <button
+            onClick={() => setShowDetail(true)}
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            View Details &rarr;
+          </button>
+        </div>
 
         {/* Owner Info (if not owner) */}
         {!isOwner && post.owner && (
@@ -258,6 +250,17 @@ export function RidePostCard({
         onClose={() => setIsBookingOpen(false)}
         ride={post}
       />
+
+      <DriverPostDetailModal
+        isOpen={showDetail}
+        onClose={() => setShowDetail(false)}
+        post={post}
+        currentUserId={currentUserId ?? ''}
+        onMessage={onMessage}
+        onDelete={onDelete}
+        deleting={deleting}
+      />
+
       {profileCompletionModal}
     </>
   );
