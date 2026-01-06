@@ -17,9 +17,7 @@ export default function ClosingCta({ title, subtitle, primary, secondary }: Clos
   return (
     <section className="bg-white dark:bg-slate-950 py-20">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 text-center">
-        <h2 className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white">
-          {title}
-        </h2>
+        <h2 className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white">{title}</h2>
 
         {subtitle ? (
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
@@ -48,5 +46,3 @@ export default function ClosingCta({ title, subtitle, primary, secondary }: Clos
     </section>
   );
 }
-
-
