@@ -5,6 +5,8 @@ import type { RidePostType, ProfileType } from '@/app/community/types';
 import InviteToRideModal from '@/components/trips/InviteToRideModal';
 import { useHasActiveBooking } from '@/hooks/useHasActiveBooking';
 import PassengerPostDetailModal from '@/app/community/components/PassengerPostDetailModal';
+import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
+import { useUserProfile } from '@/hooks/useProfile';
 
 interface PassengerPostCardProps {
   post: RidePostType;
@@ -35,6 +37,20 @@ export function PassengerPostCard({
 
   const badgeStyles = 'bg-green-100 text-green-800';
   const badgeLabel = '👋 Passenger';
+
+  const { data: profile } = useUserProfile();
+  const { showProfileCompletionPrompt, profileCompletionModal } = useProfileCompletionPrompt({
+    toastMessage: 'Please finish your profile before contacting other riders.',
+    closeRedirect: null,
+  });
+
+  const handleRestrictedAction = (action: () => void) => {
+    if (!profile?.first_name) {
+      showProfileCompletionPrompt();
+      return;
+    }
+    action();
+  };
 
   // Add direction info if round trip
   let directionLabel = '';
@@ -180,14 +196,16 @@ export function PassengerPostCard({
             <>
               {hasBooking && (
                 <button
-                  onClick={() => post.owner && onMessage(post.owner, post)}
+                  onClick={() => handleRestrictedAction(() => onMessage(post.owner!, post))}
+                  // onClick={() => post.owner && onMessage(post.owner, post)}
                   className="bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors flex-1"
                 >
                   Message
                 </button>
               )}
               <button
-                onClick={() => setIsInviteModalOpen(true)}
+                onClick={() => handleRestrictedAction(() => setIsInviteModalOpen(true))}
+                // onClick={() => setIsInviteModalOpen(true)}
                 className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors flex-1"
               >
                 Invite
@@ -216,6 +234,8 @@ export function PassengerPostCard({
         onDelete={onDelete}
         deleting={deleting}
       />
+
+      {profileCompletionModal}
     </div>
   );
 }
