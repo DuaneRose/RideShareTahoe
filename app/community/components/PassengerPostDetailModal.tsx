@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Fragment, useState } from 'react';
-import { Dialog, Transition, TransitionChild } from '@headlessui/react';
+import { Dialog, Transition, TransitionChild, DialogTitle } from '@headlessui/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { RidePostType, ProfileType } from '@/app/community/types';
@@ -136,9 +136,9 @@ export default function PassengerPostDetailModal({
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1 min-w-0 pr-4">
-                    <h3 className="text-base sm:text-2xl font-semibold text-gray-900 dark:text-white">
+                    <DialogTitle className="text-base sm:text-2xl font-semibold text-gray-900 dark:text-white">
                       {post.title || 'Untitled Ride'}
-                    </h3>
+                    </DialogTitle>
 
                     <div className="flex items-center space-x-2 mt-1">
                       <span
