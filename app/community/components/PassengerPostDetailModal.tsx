@@ -284,9 +284,10 @@ export default function PassengerPostDetailModal({
                         {hasBooking && (
                           <button
                             onClick={() =>
-                              handleRestrictedAction(() => onMessage(post.owner!, post))
+                              handleRestrictedAction(
+                                () => post.owner && onMessage(post.owner, post)
+                              )
                             }
-                            // onClick={() => onMessage(post.owner!, post)}
                             className="bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors flex-1"
                           >
                             Message
@@ -295,7 +296,6 @@ export default function PassengerPostDetailModal({
 
                         <button
                           onClick={() => handleRestrictedAction(() => setIsInviteModalOpen(true))}
-                          // onClick={() => setIsInviteModalOpen(true)}
                           className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors flex-1"
                         >
                           Invite
