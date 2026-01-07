@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/libs/supabase/client';
 
 /**
@@ -6,48 +6,49 @@ import { createClient } from '@/libs/supabase/client';
  * Returns true if there's a two-way mirror block between them.
  *
  * @param otherUserId - The ID of the user to check blocking status with
- * @returns Object with isBlocked status and loading state
+ * @returns Object with isBlocked status, loading state, and refetch function
  */
 export function useIsBlocked(otherUserId?: string) {
   const [isBlocked, setIsBlocked] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const checkBlockStatus = useCallback(async () => {
     if (!otherUserId) {
       setLoading(false);
       return;
     }
 
-    const checkBlockStatus = async () => {
-      try {
-        const supabase = createClient();
+    setLoading(true);
+    try {
+      const supabase = createClient();
 
-        // Use DB-side RPC to ensure the auth.uid() context is respected
-        const { data, error } = await supabase.rpc('is_user_blocked', {
-          other_user_id: otherUserId,
-        });
+      // Use DB-side RPC to ensure the auth.uid() context is respected
+      const { data, error } = await supabase.rpc('is_user_blocked', {
+        other_user_id: otherUserId,
+      });
 
-        if (error) {
-          console.error('Error calling is_user_blocked RPC:', error);
-          setIsBlocked(false);
-        } else if (typeof data === 'boolean') {
-          setIsBlocked(Boolean(data));
-        } else if (Array.isArray(data) && data.length > 0) {
-          // Some Supabase responses return arrays for scalar RPCs in certain setups
-          setIsBlocked(Boolean(data[0]));
-        } else {
-          setIsBlocked(Boolean(data));
-        }
-      } catch (err) {
-        console.error('Error checking block status:', err);
+      if (error) {
+        console.error('Error calling is_user_blocked RPC:', error);
         setIsBlocked(false);
-      } finally {
-        setLoading(false);
+      } else if (typeof data === 'boolean') {
+        setIsBlocked(Boolean(data));
+      } else if (Array.isArray(data) && data.length > 0) {
+        // Some Supabase responses return arrays for scalar RPCs in certain setups
+        setIsBlocked(Boolean(data[0]));
+      } else {
+        setIsBlocked(Boolean(data));
       }
-    };
-
-    checkBlockStatus();
+    } catch (err) {
+      console.error('Error checking block status:', err);
+      setIsBlocked(false);
+    } finally {
+      setLoading(false);
+    }
   }, [otherUserId]);
 
-  return { isBlocked, loading };
+  useEffect(() => {
+    checkBlockStatus();
+  }, [checkBlockStatus]);
+
+  return { isBlocked, loading, refetch: checkBlockStatus };
 }

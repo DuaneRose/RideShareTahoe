@@ -25,15 +25,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid blocked_id format' }, { status: 400 });
     }
 
-    // Delete the block record
-    const { error: deleteError } = await supabase
+    // Delete the block record and check if it existed
+    const { data: deletedRows, error: deleteError } = await supabase
       .from('user_blocks')
       .delete()
       .eq('blocker_id', user.id)
-      .eq('blocked_id', blocked_id);
+      .eq('blocked_id', blocked_id)
+      .select();
 
     if (deleteError) {
       throw deleteError;
+    }
+
+    if (!deletedRows || deletedRows.length === 0) {
+      return NextResponse.json({ error: 'Block not found' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, message: 'User unblocked' }, { status: 200 });

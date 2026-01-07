@@ -4,7 +4,7 @@ import {
   createUnauthorizedResponse,
   ensureProfileComplete,
 } from '@/libs/supabase/auth';
-import { rateLimit } from '@/libs/rateLimit';
+import { checkSupabaseRateLimit } from '@/libs/rateLimit';
 import { isValidUUID } from '@/libs/validation';
 
 const MAX_MESSAGE_LENGTH = 5000;
@@ -24,12 +24,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check rate limit first (20 messages per hour per user)
-    const rateLimitCheck = rateLimit({
-      windowMs: 60 * 60 * 1000, // 1 hour
-      max: 20,
+    // Uses database-backed rate limiting for serverless compatibility
+    const rateLimitCheck = await checkSupabaseRateLimit(supabase, user.id, 'messages', {
+      maxRequests: 20,
+      windowSeconds: 3600,
       message: 'You have sent too many messages. Please try again later.',
-      keyGenerator: () => user.id, // Use user ID instead of IP
-    })(request);
+    });
 
     if (!rateLimitCheck.success) {
       return NextResponse.json(
@@ -212,6 +212,15 @@ export async function GET(request: NextRequest) {
     if (!conversationId) {
       return NextResponse.json(
         { error: 'Conversation ID required' },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!isValidUUID(conversationId)) {
+      return NextResponse.json(
+        { error: 'Invalid conversation_id format' },
         {
           status: 400,
         }

@@ -3,10 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import BlockModal from './BlockModal';
 
-// Mock fetch API globally
-const mockFetch = jest.fn();
-globalThis.fetch = mockFetch;
-
 // Mock react-hot-toast
 jest.mock('react-hot-toast', () => ({
   toast: {
@@ -18,7 +14,9 @@ jest.mock('react-hot-toast', () => ({
 import { toast } from 'react-hot-toast';
 
 describe('BlockModal', () => {
-  const user = userEvent.setup();
+  let user: ReturnType<typeof userEvent.setup>;
+  const mockFetch = jest.fn();
+  const originalFetch = globalThis.fetch;
   const mockOnClose = jest.fn();
   const mockOnBlockStateChanged = jest.fn();
 
@@ -31,8 +29,18 @@ describe('BlockModal', () => {
     onBlockStateChanged: mockOnBlockStateChanged,
   };
 
+  beforeAll(() => {
+    globalThis.fetch = mockFetch;
+  });
+
+  afterAll(() => {
+    globalThis.fetch = originalFetch;
+  });
+
   beforeEach(() => {
+    user = userEvent.setup();
     jest.clearAllMocks();
+    mockFetch.mockReset();
     mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ success: true }),
@@ -116,12 +124,13 @@ describe('BlockModal', () => {
   });
 
   it('should disable buttons during submission', async () => {
-    mockFetch.mockImplementationOnce(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve({ ok: true, json: () => Promise.resolve({}) }), 100)
-        )
-    );
+    // eslint-disable-next-line no-unused-vars
+    let resolvePromise: (value: unknown) => void = () => {};
+    const fetchPromise = new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+
+    mockFetch.mockImplementationOnce(() => fetchPromise);
 
     render(<BlockModal {...defaultProps} />);
     const blockButton = screen.getByRole('button', { name: 'Block User' });
@@ -130,15 +139,22 @@ describe('BlockModal', () => {
 
     expect(screen.getByRole('button', { name: 'Processing...' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+
+    // Resolve the promise to prevent it from leaking into next test
+    resolvePromise!({ ok: true, json: () => Promise.resolve({}) });
+    await fetchPromise;
   });
 
   // ## Error Handling Tests
 
   it('should display error toast on API failure', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: 'User not found' }),
-    });
+    // Use mockImplementation to ensure this mock applies consistently
+    mockFetch.mockImplementation(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve({ error: 'User not found' }),
+      })
+    );
 
     render(<BlockModal {...defaultProps} />);
 
@@ -148,8 +164,10 @@ describe('BlockModal', () => {
       expect(toast.error).toHaveBeenCalledWith('User not found');
     });
 
-    // Modal should not close on error
-    expect(mockOnBlockStateChanged).not.toHaveBeenCalled();
+    // Modal should not close on error - wait to ensure no late callbacks
+    await waitFor(() => {
+      expect(mockOnBlockStateChanged).not.toHaveBeenCalled();
+    });
   });
 
   it('should display generic error on network failure', async () => {

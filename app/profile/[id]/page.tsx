@@ -67,7 +67,11 @@ export default function PublicProfilePage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
-  const { isBlocked: isUserBlocked, loading: checkingBlockStatus } = useIsBlocked(profileId);
+  const {
+    isBlocked: isUserBlocked,
+    loading: checkingBlockStatus,
+    refetch: refetchBlockStatus,
+  } = useIsBlocked(profileId);
 
   const loadProfile = useCallback(async () => {
     if (!profileId) return;
@@ -448,8 +452,8 @@ export default function PublicProfilePage() {
           onReviewSubmitted={() => {
             setShowReviewButton(false);
             setIsReviewModalOpen(false);
-            // Ideally refresh reviews list too
-            globalThis.window.location.reload();
+            // Refresh profile data to show updated reviews
+            loadProfile();
           }}
         />
       )}
@@ -471,7 +475,8 @@ export default function PublicProfilePage() {
         isCurrentlyBlocked={isUserBlocked}
         onBlockStateChanged={() => {
           setIsBlockModalOpen(false);
-          globalThis.window.location.reload();
+          refetchBlockStatus();
+          loadProfile();
         }}
       />
 

@@ -20,7 +20,8 @@ describe('POST /api/users/unblock', () => {
     const supabase = {
       from: jest.fn((table: string) => {
         if (table === 'user_blocks') {
-          const eq2 = jest.fn().mockResolvedValue({ data: { id: 'block-1' }, error: null });
+          const select = jest.fn().mockResolvedValue({ data: [{ id: 'block-1' }], error: null });
+          const eq2 = jest.fn().mockReturnValue({ select });
           const eq1 = jest.fn().mockReturnValue({ eq: eq2 });
           const del = jest.fn().mockReturnValue({ eq: eq1 });
           return { delete: del };
@@ -42,14 +43,15 @@ describe('POST /api/users/unblock', () => {
     expect(res.status).toBe(200);
   });
 
-  it('is idempotent when no block exists', async () => {
+  it('returns 404 when no block exists', async () => {
     const user = { id: validUserId };
     const blockedId = validBlockedId;
 
     const supabase = {
       from: jest.fn((table) => {
         if (table === 'user_blocks') {
-          const eq2 = jest.fn().mockResolvedValue({ data: null, error: null });
+          const select = jest.fn().mockResolvedValue({ data: [], error: null });
+          const eq2 = jest.fn().mockReturnValue({ select });
           const eq1 = jest.fn().mockReturnValue({ eq: eq2 });
           const del = jest.fn().mockReturnValue({ eq: eq1 });
           return { delete: del };
@@ -67,6 +69,8 @@ describe('POST /api/users/unblock', () => {
 
     const res = await POST(request);
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toBe('Block not found');
   });
 });
