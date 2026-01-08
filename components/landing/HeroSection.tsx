@@ -2,10 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 /**
- * Landing hero for RideShareTahoe (SEO + UX optimized).
- * - One clear keyword-focused H1 for search engines
- * - Keeps the brand slogan as a secondary headline
- * - Adds accessible CTAs using links (not router.push)
+ * Landing hero section for the homepage.
  */
 export default function HeroSection() {
   return (

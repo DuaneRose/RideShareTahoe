@@ -1,18 +1,28 @@
 import Link from 'next/link';
 
+/**
+ * Props for the ClosingCta component.
+ */
 type ClosingCtaProps = {
+  /** Title used for the final CTA block. */
   title: string;
+  /** Supporting copy shown below the title. */
   subtitle?: string;
+  /** Primary action data with label and link. */
   primary: {
     label: string;
     href: string;
   };
+  /** Optional secondary action data with label and link. */
   secondary?: {
     label: string;
     href: string;
   };
 };
 
+/**
+ * Renders the closing CTA section that encourages visitors to act.
+ */
 export default function ClosingCta({ title, subtitle, primary, secondary }: ClosingCtaProps) {
   return (
     <section className="bg-white dark:bg-slate-950 py-20">
