@@ -41,6 +41,7 @@ export function PassengerPostCard({
   const badgeLabel = '👋 Passenger';
   const departureDateLabel = formatDateLabel(post.departure_date);
   const departureTimeLabel = formatTimeLabel(post.departure_time);
+  const returnDateLabel = formatDateLabel(post.return_date);
 
   const { data: profile } = useUserProfile();
   const { showProfileCompletionPrompt, profileCompletionModal } = useProfileCompletionPrompt({
@@ -95,9 +96,7 @@ export function PassengerPostCard({
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {departureDateLabel ?? 'Date TBD'}
               {departureTimeLabel && ` · ${departureTimeLabel}`}
-              {isCombinedRoundTrip &&
-                post.return_date &&
-                ` - ${new Date(post.return_date).toLocaleDateString()}`}
+              {isCombinedRoundTrip && returnDateLabel && ` - ${returnDateLabel}`}
             </span>
           </div>
         </div>

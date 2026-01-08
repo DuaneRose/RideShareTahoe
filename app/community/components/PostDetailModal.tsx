@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Fragment, useState } from 'react';
-import { Dialog, Transition, TransitionChild, DialogTitle } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { RidePostType, ProfileType } from '@/app/community/types';
@@ -158,7 +158,7 @@ export default function RidePostDetailModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <div className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-slate-900">
+              <DialogPanel className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-slate-900">
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1 min-w-0 pr-4">
@@ -171,24 +171,24 @@ export default function RidePostDetailModal({
 
                     <div className="flex items-center space-x-2 mt-1">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-md font-medium ${badgeStyles}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium ${badgeStyles}`}
                       >
                         {badgeLabel}
                       </span>
 
                       {directionLabel && (
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-md font-medium ${directionStyles}`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium ${directionStyles}`}
                         >
                           {directionLabel}
                         </span>
                       )}
 
-                      <span className="text-md text-gray-500 dark:text-gray-400">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {departureDateLabel ?? 'Date TBD'}
                         {departureTimeLabel && ` · ${departureTimeLabel}`}
                         {hasReturnInfo && (
-                          <span className="block mt-0.5 text-md text-gray-500 dark:text-gray-400">
+                          <span className="block mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                             Return: {returnDateLabel} · {returnTimeLabel}
                           </span>
                         )}
@@ -211,7 +211,7 @@ export default function RidePostDetailModal({
 
                     {isOwner && (
                       <span
-                        className={`mt-1 text-md px-2 py-1 rounded-full ${
+                        className={`mt-1 text-sm px-2 py-1 rounded-full ${
                           post.status === 'active'
                             ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                             : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-400'
@@ -236,20 +236,20 @@ export default function RidePostDetailModal({
 
                 {/* Route */}
                 <div className="mb-4 grow">
-                  <div className="flex items-center text-md text-gray-700 dark:text-gray-300 mb-2">
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 mb-2">
                     <span className="font-medium w-12 text-gray-500 dark:text-gray-400">From:</span>
                     <span className="truncate flex-1">{post.start_location}</span>
                   </div>
-                  <div className="flex items-center text-md text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
                     <span className="font-medium w-12 text-gray-500 dark:text-gray-400">To:</span>
                     <span className="truncate flex-1">{post.end_location}</span>
                   </div>
                 </div>
 
                 {/* Additional metadata */}
-                <div className="max-h-40 overflow-y-auto padding-scroll mb-3">
+                <div className="max-h-40 overflow-y-auto pr-2 mb-3">
                   {metaTags.length > 0 && (
-                    <div className="mb-4 space-y-1 text-md text-gray-500 dark:text-gray-400">
+                    <div className="mb-4 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                       {metaTags.map((meta) => (
                         <p key={meta.label}>
                           <span className="font-semibold text-gray-700 dark:text-gray-300">
@@ -276,13 +276,13 @@ export default function RidePostDetailModal({
                           unoptimized
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-md hover:opacity-90 transition-opacity">
+                        <div className="w-8 h-8 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-sm hover:opacity-90 transition-opacity">
                           👤
                         </div>
                       )}
                     </Link>
 
-                    <div className="text-md">
+                    <div className="text-sm">
                       <Link href={`/profile/${post.owner.id}`} className="hover:underline">
                         <p className="font-medium text-gray-900 dark:text-white">
                           {post.owner.first_name} {post.owner.last_name}
@@ -373,7 +373,7 @@ export default function RidePostDetailModal({
                 )}
 
                 {profileCompletionModal}
-              </div>
+              </DialogPanel>
             </TransitionChild>
           </div>
         </div>

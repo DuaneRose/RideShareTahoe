@@ -1,11 +1,29 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PassengerPostCard } from './PassengerPostCard';
 import { useHasActiveBooking } from '@/hooks/useHasActiveBooking';
+import { useUserProfile } from '@/hooks/useProfile';
 import type { RidePostType } from '../../types';
 
 // Mocks
 jest.mock('@/hooks/useHasActiveBooking', () => ({
   useHasActiveBooking: jest.fn(),
+}));
+
+jest.mock('@/hooks/useProfile', () => ({
+  useUserProfile: jest.fn(),
+}));
+
+jest.mock('@/hooks/useProfileCompletionPrompt', () => ({
+  useProfileCompletionPrompt: jest.fn(() => ({
+    showProfileCompletionPrompt: jest.fn(),
+    profileCompletionModal: null,
+  })),
+}));
+
+jest.mock('@/app/community/components/PostDetailModal', () => ({
+  __esModule: true,
+  default: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="post-detail-modal">Post Detail Modal</div> : null,
 }));
 
 jest.mock('@/components/trips/InviteToRideModal', () => ({
@@ -40,6 +58,10 @@ describe('PassengerPostCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useHasActiveBooking as jest.Mock).mockReturnValue({ hasBooking: false });
+    (useUserProfile as jest.Mock).mockReturnValue({
+      data: { first_name: 'Test User' },
+      isLoading: false,
+    });
   });
 
   it('renders post details', () => {
