@@ -87,6 +87,7 @@ describe('RidePostCard', () => {
         currentUserId="user-1" // Not owner
         onMessage={mockOnMessage}
         onDelete={mockOnDelete}
+        onViewDetails={() => {}}
       />
     );
 
@@ -104,6 +105,7 @@ describe('RidePostCard', () => {
         currentUserId="user-1"
         onMessage={mockOnMessage}
         onDelete={mockOnDelete}
+        onViewDetails={() => {}}
       />
     );
 
@@ -118,6 +120,7 @@ describe('RidePostCard', () => {
         currentUserId="user-1"
         onMessage={mockOnMessage}
         onDelete={mockOnDelete}
+        onViewDetails={() => {}}
       />
     );
 
@@ -131,6 +134,7 @@ describe('RidePostCard', () => {
         currentUserId="user-1"
         onMessage={mockOnMessage}
         onDelete={mockOnDelete}
+        onViewDetails={() => {}}
       />
     );
 
@@ -146,6 +150,7 @@ describe('RidePostCard', () => {
         currentUserId="user-1"
         onMessage={mockOnMessage}
         onDelete={mockOnDelete}
+        onViewDetails={() => {}}
       />
     );
 
