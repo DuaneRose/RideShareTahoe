@@ -22,6 +22,7 @@ interface RidesTabProps {
   pageSize?: number;
   // eslint-disable-next-line no-unused-vars
   openMessageModal: (recipient: ProfileType, ridePost: RidePostType) => void;
+  hideCommunityMembers?: boolean;
 }
 
 /**
@@ -34,6 +35,7 @@ export function RidesTab({
   initialPage = 1,
   pageSize = RIDES_PAGE_SIZE,
   openMessageModal,
+  hideCommunityMembers = false,
 }: Readonly<RidesTabProps>) {
   const tabRef = useRef<HTMLDivElement>(null);
   const [rides, setRides] = useState<RidePostType[]>([]);
@@ -236,10 +238,12 @@ export function RidesTab({
       {/* Section 1: Driver Ride Posts */}
       <section>{renderRidesSection()}</section>
 
-      {/* Section 2: Community Members */}
-      <section>
-        <CommunityMembersList supabase={supabase} />
-      </section>
+      {/* Section 2: Community Members (if not hidden) */}
+      {!hideCommunityMembers && (
+        <section>
+          <CommunityMembersList supabase={supabase} />
+        </section>
+      )}
     </div>
   );
 }

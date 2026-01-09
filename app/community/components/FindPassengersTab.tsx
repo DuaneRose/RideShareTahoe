@@ -13,6 +13,7 @@ interface PassengersTabProps {
   openMessageModal: (recipient: ProfileType, ridePost: RidePostType) => void;
   initialPage?: number;
   pageSize?: number;
+  hideCommunityMembers?: boolean;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function FindPassengersTab({
   openMessageModal,
   initialPage,
   pageSize,
+  hideCommunityMembers = false,
 }: Readonly<PassengersTabProps>) {
   return (
     <div className="space-y-12">
@@ -39,10 +41,12 @@ export default function FindPassengersTab({
         />
       </section>
 
-      {/* Section 2: Community Members */}
-      <section>
-        <CommunityMembersList supabase={supabase} />
-      </section>
+      {/* Section 2: Community Members (if not hidden) */}
+      {!hideCommunityMembers && (
+        <section>
+          <CommunityMembersList supabase={supabase} />
+        </section>
+      )}
     </div>
   );
 }
