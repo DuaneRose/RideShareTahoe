@@ -23,7 +23,11 @@ export async function POST(request: NextRequest) {
       return createUnauthorizedResponse(authError);
     }
 
-    // Check rate limit first (20 messages per hour per user)
+    // Check profile completion first - don't consume rate limit for incomplete profiles
+    const profileError = await ensureProfileComplete(supabase, user.id, 'sending messages');
+    if (profileError) return profileError;
+
+    // Check rate limit (20 messages per hour per user)
     // Uses database-backed rate limiting for serverless compatibility
     const rateLimitCheck = await checkSupabaseRateLimit(supabase, user.id, 'messages', {
       maxRequests: 20,
@@ -43,9 +47,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const profileError = await ensureProfileComplete(supabase, user.id, 'sending messages');
-    if (profileError) return profileError;
-
     const { recipient_id, content, ride_post_id } = await request.json();
 
     if (!recipient_id || !content) {
@@ -55,6 +56,11 @@ export async function POST(request: NextRequest) {
     // Validate UUID format to prevent injection
     if (!isValidUUID(recipient_id)) {
       return NextResponse.json({ error: 'Invalid recipient_id format' }, { status: 400 });
+    }
+
+    // Prevent self-messaging
+    if (recipient_id === user.id) {
+      return NextResponse.json({ error: 'You cannot message yourself' }, { status: 400 });
     }
 
     if (ride_post_id && !isValidUUID(ride_post_id)) {
@@ -78,19 +84,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message content cannot be empty' }, { status: 400 });
     }
 
-    // Find existing conversation
-    // Check both orderings: (user, recipient) or (recipient, user)
-    const { data: conversations } = await supabase
+    // Find existing conversation with optimized query
+    // Check both orderings: (user, recipient) or (recipient, user) AND filter by ride_id
+    let conversationQuery = supabase
       .from('conversations')
       .select('*')
       .or(
         `and(participant1_id.eq.${user.id},participant2_id.eq.${recipient_id}),and(participant1_id.eq.${recipient_id},participant2_id.eq.${user.id})`
       );
 
-    // Filter by ride_id in JS since we validated the UUIDs above
-    const existingConversation = conversations?.find((c) =>
-      ride_post_id ? c.ride_id === ride_post_id : c.ride_id === null
-    );
+    // Add ride_id filter at the database level for efficiency
+    if (ride_post_id) {
+      conversationQuery = conversationQuery.eq('ride_id', ride_post_id);
+    } else {
+      conversationQuery = conversationQuery.is('ride_id', null);
+    }
+
+    const { data: existingConversation } = await conversationQuery.maybeSingle();
 
     let conversationId;
 
@@ -120,18 +130,22 @@ export async function POST(request: NextRequest) {
 
       if (newConvError) {
         // If unique constraint violation, another request created the conversation
-        // Try to fetch it again
+        // Try to fetch it again with optimized query
         if (newConvError.code === '23505') {
-          const { data: retryConversations } = await supabase
+          let retryQuery = supabase
             .from('conversations')
             .select('*')
             .or(
               `and(participant1_id.eq.${user.id},participant2_id.eq.${recipient_id}),and(participant1_id.eq.${recipient_id},participant2_id.eq.${user.id})`
             );
 
-          const retryConversation = retryConversations?.find((c) =>
-            ride_post_id ? c.ride_id === ride_post_id : c.ride_id === null
-          );
+          if (ride_post_id) {
+            retryQuery = retryQuery.eq('ride_id', ride_post_id);
+          } else {
+            retryQuery = retryQuery.is('ride_id', null);
+          }
+
+          const { data: retryConversation } = await retryQuery.maybeSingle();
 
           if (retryConversation) {
             conversationId = retryConversation.id;

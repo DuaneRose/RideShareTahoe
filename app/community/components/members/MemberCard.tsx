@@ -1,6 +1,9 @@
+'use client';
+
 import React from 'react';
 import { ProfileType } from '../../types';
 import { BaseProfileCard } from '../common/BaseProfileCard';
+import { useIsBlocked } from '@/hooks/useIsBlocked';
 
 interface MemberCardProps {
   readonly profile: ProfileType;
@@ -8,6 +11,12 @@ interface MemberCardProps {
 
 export default function MemberCard({ profile }: Readonly<MemberCardProps>) {
   const { bio } = profile;
+  const { isBlocked } = useIsBlocked(profile.id);
+
+  // Hide cards for blocked users (defense in depth - RLS should also filter these)
+  if (isBlocked) {
+    return null;
+  }
 
   return (
     <BaseProfileCard profile={profile}>

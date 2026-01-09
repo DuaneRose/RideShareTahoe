@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/libs/supabase/client';
 import { formatLocation, formatPronouns } from '@/libs/utils';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
@@ -53,6 +53,7 @@ interface PendingReview {
  */
 export default function PublicProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const profileId = Array.isArray(params.id) ? params.id[0] : params.id;
   const { user: currentUser, isLoading: authLoading } = useProtectedRoute();
 
@@ -284,29 +285,39 @@ export default function PublicProfilePage() {
                 </button>
               )}
 
-              {/* Report Button */}
+              {/* Action Buttons for Other Users */}
               {currentUser.id !== profile.id && (
                 <>
-                  <button
-                    onClick={() => setIsMessageModalOpen(true)}
-                    className="ml-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    💬 Message
-                  </button>
+                  {/* Only show Message button if not blocked */}
+                  {!isUserBlocked && (
+                    <button
+                      onClick={() => setIsMessageModalOpen(true)}
+                      className="ml-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      💬 Message
+                    </button>
+                  )}
                   <button
                     onClick={() => setIsBlockModalOpen(true)}
                     disabled={checkingBlockStatus}
-                    className="ml-2 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                    className={`ml-2 px-6 py-2 rounded-lg transition-colors disabled:opacity-50 ${
+                      isUserBlocked
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-amber-600 text-white hover:bg-amber-700'
+                    }`}
                   >
                     {isUserBlocked ? '🔓 Unblock' : '🚫 Block'}
                   </button>
-                  <button
-                    onClick={() => setIsReportModalOpen(true)}
-                    className="ml-2 text-red-600 hover:text-red-700 font-medium text-sm transition-colors"
-                    title="Report User"
-                  >
-                    ⚠️ Report
-                  </button>
+                  {/* Only show Report button if not blocked */}
+                  {!isUserBlocked && (
+                    <button
+                      onClick={() => setIsReportModalOpen(true)}
+                      className="ml-2 text-red-600 hover:text-red-700 font-medium text-sm transition-colors"
+                      title="Report User"
+                    >
+                      ⚠️ Report
+                    </button>
+                  )}
                 </>
               )}
 
@@ -475,8 +486,14 @@ export default function PublicProfilePage() {
         isCurrentlyBlocked={isUserBlocked}
         onBlockStateChanged={() => {
           setIsBlockModalOpen(false);
-          refetchBlockStatus();
-          loadProfile();
+          // If blocking (not unblocking), redirect away since interaction is no longer possible
+          if (!isUserBlocked) {
+            router.push('/community');
+          } else {
+            // If unblocking, just refresh the block status and profile
+            refetchBlockStatus();
+            loadProfile();
+          }
         }}
       />
 
