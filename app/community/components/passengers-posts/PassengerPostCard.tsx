@@ -3,10 +3,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import type { RidePostType, ProfileType } from '@/app/community/types';
 import InviteToRideModal from '@/components/trips/InviteToRideModal';
-import { useHasActiveBooking } from '@/hooks/useHasActiveBooking';
-import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
-import { useUserProfile } from '@/hooks/useProfile';
-import { formatDateLabel, formatTimeLabel } from '@/lib/dateFormat';
+import { useIsBlocked } from '@/hooks/useIsBlocked';
 
 interface PassengerPostCardProps {
   post: RidePostType;
@@ -35,7 +32,7 @@ export function PassengerPostCard({
 }: Readonly<PassengerPostCardProps>) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const isOwner = currentUserId === post.poster_id;
-  const { hasBooking } = useHasActiveBooking(currentUserId, post.owner?.id);
+  const { isBlocked } = useIsBlocked(post.owner?.id);
 
   const badgeStyles = 'bg-green-100 text-green-800';
   const badgeLabel = '👋 Passenger';
@@ -56,6 +53,11 @@ export function PassengerPostCard({
     }
     action();
   };
+
+  // Hide posts from blocked users (unless viewing own post)
+  if (!isOwner && isBlocked) {
+    return null;
+  }
 
   // Add direction info if round trip
   let directionLabel = '';
@@ -198,16 +200,12 @@ export function PassengerPostCard({
         ) : (
           post.owner && (
             <>
-              {hasBooking && (
-                <button
-                  onClick={() =>
-                    handleRestrictedAction(() => post.owner && onMessage(post.owner, post))
-                  }
-                  className="bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors flex-1"
-                >
-                  Message
-                </button>
-              )}
+              <button
+                onClick={() => post.owner && onMessage(post.owner, post)}
+                className="bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors flex-1"
+              >
+                Message
+              </button>
               <button
                 onClick={() => handleRestrictedAction(() => setIsInviteModalOpen(true))}
                 className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors flex-1"
