@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PassengerPostCard } from './PassengerPostCard';
 import type { RidePostType } from '../../types';
+import { useUserProfile } from '@/hooks/useProfile';
 
 // Mocks
 jest.mock('@/hooks/useIsBlocked', () => ({
@@ -55,6 +56,10 @@ describe('PassengerPostCard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (useUserProfile as jest.Mock).mockReturnValue({
+      data: { first_name: 'Test User' },
+      isLoading: false,
+    });
   });
 
   it('renders post details', () => {
