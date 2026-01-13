@@ -78,11 +78,14 @@ jest.mock('@/lib/dateFormat', () => ({
   formatTimeLabel: (v?: string | null) => (v ? '12:00 PM' : null),
 }));
 
-jest.mock('@/lib/PostModalCongif', () => ({
+jest.mock('@/app/community/components/utils/postBadges', () => ({
   getBadgeConfig: (type: string) => {
     if (type === 'driver') return { styles: 'bg-blue', label: '🚗 Driver' };
     return { styles: 'bg-green', label: '👋 Passenger' };
   },
+}));
+
+jest.mock('@/app/community/components/utils/tripDirection', () => ({
   getDirectionConfig: () => ({
     label: '',
     styles: '',

@@ -12,7 +12,8 @@ import { useHasActiveBooking } from '@/hooks/useHasActiveBooking';
 import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
 import { useUserProfile } from '@/hooks/useProfile';
 import { formatDateLabel, formatTimeLabel } from '@/lib/dateFormat';
-import { getBadgeConfig, getDirectionConfig } from '@/lib/PostModalCongif';
+import { getBadgeConfig } from '@/app/community/components/utils/postBadges';
+import { getDirectionConfig } from '@/app/community/components/utils/tripDirection';
 
 interface PostDetailModalProps {
   readonly isOpen: boolean;

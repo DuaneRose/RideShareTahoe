@@ -10,7 +10,8 @@ import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
 import { useUserProfile } from '@/hooks/useProfile';
 import { useIsBlocked } from '@/hooks/useIsBlocked';
 import { formatDateLabel, formatTimeLabel } from '@/lib/dateFormat';
-import { getBadgeConfig, getDirectionConfig } from '@/lib/PostModalCongif';
+import { getBadgeConfig } from '@/app/community/components/utils/postBadges';
+import { getDirectionConfig } from '@/app/community/components/utils/tripDirection';
 
 interface RidePostCardProps {
   post: RidePostType;
