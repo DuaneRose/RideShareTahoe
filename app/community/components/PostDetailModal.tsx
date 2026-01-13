@@ -14,6 +14,7 @@ import { useUserProfile } from '@/hooks/useProfile';
 import { formatDateLabel, formatTimeLabel } from '@/lib/dateFormat';
 import { getBadgeConfig } from '@/app/community/components/utils/postBadges';
 import { getDirectionConfig } from '@/app/community/components/utils/tripDirection';
+import { sanitizeLocation } from '@/libs/sanitize/location';
 
 interface PostDetailModalProps {
   readonly isOpen: boolean;
@@ -72,6 +73,8 @@ export default function PostDetailModal({
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
+  const sanitizedStartLocation = sanitizeLocation(post.start_location);
+  const sanitizedEndLocation = sanitizeLocation(post.end_location);
   const isOwner = currentUserId === post.poster_id;
   const isDriver = post.posting_type === 'driver';
   const { hasBooking } = useHasActiveBooking(currentUserId, post.owner?.id);
@@ -224,11 +227,11 @@ export default function PostDetailModal({
                 <div className="mb-4 grow">
                   <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 mb-2">
                     <span className="font-medium w-12 text-gray-500 dark:text-gray-400">From:</span>
-                    <span className="truncate flex-1">{post.start_location}</span>
+                    <span className="truncate flex-1">{sanitizedStartLocation}</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
                     <span className="font-medium w-12 text-gray-500 dark:text-gray-400">To:</span>
-                    <span className="truncate flex-1">{post.end_location}</span>
+                    <span className="truncate flex-1">{sanitizedEndLocation}</span>
                   </div>
                 </div>
 

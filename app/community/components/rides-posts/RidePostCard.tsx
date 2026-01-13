@@ -12,6 +12,7 @@ import { useIsBlocked } from '@/hooks/useIsBlocked';
 import { formatDateLabel, formatTimeLabel } from '@/lib/dateFormat';
 import { getBadgeConfig } from '@/app/community/components/utils/postBadges';
 import { getDirectionConfig } from '@/app/community/components/utils/tripDirection';
+import { sanitizeLocation } from '@/libs/sanitize/location';
 
 interface RidePostCardProps {
   post: RidePostType;
@@ -59,6 +60,8 @@ export function RidePostCard({
     return null;
   }
 
+  const sanitizedStartLocation = sanitizeLocation(post.start_location);
+  const sanitizedEndLocation = sanitizeLocation(post.end_location);
   const cardBackground = 'bg-white dark:bg-slate-900';
   const { styles: badgeStyles, label: badgeLabel } = getBadgeConfig(post.posting_type);
   const {
@@ -142,11 +145,11 @@ export function RidePostCard({
         <div className="mb-4 grow">
           <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 mb-2">
             <span className="font-medium w-12 text-gray-500 dark:text-gray-400">From:</span>
-            <span className="truncate flex-1">{post.start_location}</span>
+            <span className="truncate flex-1">{sanitizedStartLocation}</span>
           </div>
           <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
             <span className="font-medium w-12 text-gray-500 dark:text-gray-400">To:</span>
-            <span className="truncate flex-1">{post.end_location}</span>
+            <span className="truncate flex-1">{sanitizedEndLocation}</span>
           </div>
         </div>
 

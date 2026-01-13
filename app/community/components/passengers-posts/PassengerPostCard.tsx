@@ -7,6 +7,7 @@ import { useIsBlocked } from '@/hooks/useIsBlocked';
 import { useProfileCompletionPrompt } from '@/hooks/useProfileCompletionPrompt';
 import { useUserProfile } from '@/hooks/useProfile';
 import { formatDateLabel, formatTimeLabel } from '@/lib/dateFormat';
+import { sanitizeLocation } from '@/libs/sanitize/location';
 
 interface PassengerPostCardProps {
   post: RidePostType;
@@ -37,6 +38,8 @@ export function PassengerPostCard({
   const isOwner = currentUserId === post.poster_id;
   const { isBlocked } = useIsBlocked(post.owner?.id);
 
+  const sanitizedStartLocation = sanitizeLocation(post.start_location);
+  const sanitizedEndLocation = sanitizeLocation(post.end_location);
   const badgeStyles = 'bg-green-100 text-green-800';
   const badgeLabel = '👋 Passenger';
   const departureDateLabel = formatDateLabel(post.departure_date);
@@ -122,11 +125,11 @@ export function PassengerPostCard({
       <div className="mb-4 grow">
         <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 mb-2">
           <span className="font-medium w-12 text-gray-500 dark:text-gray-400">From:</span>
-          <span className="truncate flex-1">{post.start_location}</span>
+          <span className="truncate flex-1">{sanitizedStartLocation}</span>
         </div>
         <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
           <span className="font-medium w-12 text-gray-500 dark:text-gray-400">To:</span>
-          <span className="truncate flex-1">{post.end_location}</span>
+          <span className="truncate flex-1">{sanitizedEndLocation}</span>
         </div>
       </div>
 
