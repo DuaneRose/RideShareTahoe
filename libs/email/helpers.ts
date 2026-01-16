@@ -14,11 +14,16 @@ export interface UserWithEmail {
  * Uses APP_URL, then VERCEL_URL, then falls back to production URL.
  */
 export function getAppUrl(): string {
-  if (process.env.APP_URL) {
-    return process.env.APP_URL;
+  const appUrl = process.env.APP_URL;
+  const vercelUrl = process.env.VERCEL_URL;
+
+  console.log(`[getAppUrl] APP_URL=${appUrl || 'not set'}, VERCEL_URL=${vercelUrl || 'not set'}`);
+
+  if (appUrl) {
+    return appUrl;
   }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+  if (vercelUrl) {
+    return `https://${vercelUrl}`;
   }
   return 'https://ridesharetahoe.com';
 }
